@@ -59,6 +59,9 @@
           padding-left: 0!important;
           padding-right: 0!important;
         }
+        #ulkeye{
+          cursor: pointer;
+        }
        
     </style>
 </head>
@@ -87,11 +90,12 @@
    
 </body>
 <script>
-        async function geoLocate(){
-            const navi= await navigator.geolocation;
-            const yer=await navi.getCurrentPosition(showPosition);
+       function geoLocate(){
+          if(navigator.geolocation){
+            navigator.geolocation.getCurrentPosition(onsucc,onerr);
+          }
         }
-          async function showPosition(position){
+          async function onsucc(position){
           
               let lat = position.coords.latitude.toFixed(6);
               let long = position.coords.longitude.toFixed(6);
@@ -99,15 +103,16 @@
               const veri =await fetch("https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=" + lat + "&lon=" + long);
             
               const response=await veri.json();
-              console.log(response);
               let ulke= response.address["country"];
               display(ulke);
             }
+          const onerr=()=>{
+            console.log("error");
+          }
             
   geoLocate();
 
     const countrySearch=()=>{
-      
       let inputDegeri=document.getElementById("inputDegeri").value;
       display(inputDegeri);
     }
@@ -117,16 +122,13 @@
       document.getElementsByClassName("anaUlke").innerHTML="";
       try{
       const gosterge=await fetch("https://restcountries.com/v3.1/name/"+country);
-      console.log(gosterge.ok);
       if(!gosterge.ok){
-              console.log("buraya girdi");
               document.querySelector(".anaUlke").setAttribute("style","opacity: 0");
               document.querySelector("#komsuKismi").setAttribute("style","opacity: 0");
               throw new Error("Böyle bir ülke bulunmamaktadır.");
               }
       
         const data=await gosterge.json();
-
     ulkeGetir(data);
     let neighbour=[];
     neighbour=data[0].borders;
@@ -234,11 +236,11 @@ const ulkeGetir=(data)=>{
 
 
 const komsuGetir=(komsular)=>{
-  
+    let isim="'"+komsular[0].name.common+"'";
     let bayrak=
     `<div class="col-2 me-1 mb-3"> 
-      <div class="card w-100" id="ulkeye">
-        <img src=${komsular[0].flags.png} class="my-auto" alt="...">
+      <div class="card w-100" id="ulkeye" >
+        <img src=${komsular[0].flags.png} onclick="display(${isim})" class="my-auto" alt="...">
         <p id="komsuAdi">${komsular[0].name.common}</p>
       </div>  
     </div>`
@@ -247,5 +249,6 @@ const komsuGetir=(komsular)=>{
 
 }
 
+    
 </script>
 </html>
