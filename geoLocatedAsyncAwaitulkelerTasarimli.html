@@ -55,7 +55,7 @@
           height: 68.5px;
         }
         input{
-          width: 82%;
+          width: 80%;
         }
         .pd-siz{
           padding-left: 0!important;
@@ -64,8 +64,9 @@
         #ulkeye{
           cursor: pointer;
         }
-        
-        
+        #loading{
+          display:none;
+        }
        
     </style>
 </head>
@@ -74,10 +75,13 @@
       <div class="row" id="ilk">
         <div id="search-bar" class="d-flex-row w-100 my-3 border p-2">
           <input type="text" placeholder="Aranacak Ülkeyi Giriniz" class="border p-2" id="inputDegeri">
-
           <button class="btn btn-sm btn-primary" onclick="countrySearch()">Search</button>
           <button class="btn btn-sm btn-primary" onclick="geoLocate()">Get Country</button>
         </div>
+
+        <div class="spinner-border" id="loading" role="status">
+        </div>
+
       </div>
       <div class="row border mb-3 anaUlke"> </div>
       <div class="row border px-0" id="komsuKismi">
@@ -116,7 +120,7 @@
             console.log("error");
           }
             
-  geoLocate();
+    geoLocate();
 
     const countrySearch=()=>{
       let inputDegeri=document.getElementById("inputDegeri").value;
@@ -124,6 +128,8 @@
     }
 
     async function display(country){
+      document.getElementById("loading").style.display="inline";
+
       document.querySelector(".bayraklar").innerHTML="";
       document.getElementsByClassName("anaUlke").innerHTML="";
       try{
@@ -145,11 +151,14 @@
           }
       else{
           callback(neighbour);
+          
           }
       }
       catch(err){
         renderCatch(err);
-      }}
+      }
+      document.getElementById("loading").style.display="none";
+    }
         
 const renderCatch=(err)=>{
 
