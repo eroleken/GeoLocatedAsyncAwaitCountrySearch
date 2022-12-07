@@ -10,7 +10,9 @@
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
   />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
+ 
     <style>
         *{
             margin: 0;
@@ -53,11 +55,17 @@
           height: 68.5px;
         }
         input{
-          width: 82%;
+          width: 80%;
         }
         .pd-siz{
           padding-left: 0!important;
           padding-right: 0!important;
+        }
+        #ulkeye{
+          cursor: pointer;
+        }
+        #loading{
+          display:none;
         }
        
     </style>
@@ -70,6 +78,10 @@
           <button class="btn btn-sm btn-primary" onclick="countrySearch()">Search</button>
           <button class="btn btn-sm btn-primary" onclick="geoLocate()">Get Country</button>
         </div>
+
+        <div class="spinner-border" id="loading" role="status">
+        </div>
+
       </div>
       <div class="row border mb-3 anaUlke"> </div>
       <div class="row border px-0" id="komsuKismi">
@@ -87,11 +99,13 @@
    
 </body>
 <script>
-        async function geoLocate(){
-            const navi= await navigator.geolocation;
-            const yer=await navi.getCurrentPosition(showPosition);
+
+       function geoLocate(){
+          if(navigator.geolocation){
+            navigator.geolocation.getCurrentPosition(onsucc,onerr);
+          }
         }
-          async function showPosition(position){
+          async function onsucc(position){
           
               let lat = position.coords.latitude.toFixed(6);
               let long = position.coords.longitude.toFixed(6);
@@ -99,34 +113,34 @@
               const veri =await fetch("https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=" + lat + "&lon=" + long);
             
               const response=await veri.json();
-              console.log(response);
               let ulke= response.address["country"];
               display(ulke);
             }
+          const onerr=()=>{
+            console.log("error");
+          }
             
-  geoLocate();
+    geoLocate();
 
     const countrySearch=()=>{
-      
       let inputDegeri=document.getElementById("inputDegeri").value;
       display(inputDegeri);
     }
 
     async function display(country){
+      document.getElementById("loading").style.display="inline";
+
       document.querySelector(".bayraklar").innerHTML="";
       document.getElementsByClassName("anaUlke").innerHTML="";
       try{
       const gosterge=await fetch("https://restcountries.com/v3.1/name/"+country);
-      console.log(gosterge.ok);
       if(!gosterge.ok){
-              console.log("buraya girdi");
               document.querySelector(".anaUlke").setAttribute("style","opacity: 0");
               document.querySelector("#komsuKismi").setAttribute("style","opacity: 0");
               throw new Error("Böyle bir ülke bulunmamaktadır.");
               }
       
         const data=await gosterge.json();
-
     ulkeGetir(data);
     let neighbour=[];
     neighbour=data[0].borders;
@@ -137,11 +151,14 @@
           }
       else{
           callback(neighbour);
+          
           }
       }
       catch(err){
         renderCatch(err);
-      }}
+      }
+      document.getElementById("loading").style.display="none";
+    }
         
 const renderCatch=(err)=>{
 
@@ -234,11 +251,11 @@ const ulkeGetir=(data)=>{
 
 
 const komsuGetir=(komsular)=>{
-  
+    let isim="'"+komsular[0].name.common+"'";
     let bayrak=
     `<div class="col-2 me-1 mb-3"> 
-      <div class="card w-100" id="ulkeye">
-        <img src=${komsular[0].flags.png} class="my-auto" alt="...">
+      <div class="card w-100" id="ulkeye" >
+        <img src=${komsular[0].flags.png} onclick="display(${isim})" class="my-auto" alt="...">
         <p id="komsuAdi">${komsular[0].name.common}</p>
       </div>  
     </div>`
@@ -247,5 +264,6 @@ const komsuGetir=(komsular)=>{
 
 }
 
+    
 </script>
 </html>
